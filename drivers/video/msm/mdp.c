@@ -1268,6 +1268,13 @@ irqreturn_t mdp_isr(int irq, void *ptr)
 
 		/* LCDC Frame Start */
 		if (mdp_interrupt & LCDC_FRAME_START) {
+<<<<<<< HEAD
+=======
+			dma = &dma2_data;
+			spin_lock_irqsave(&mdp_spin_lock, flag);
+			vsync_isr = vsync_cntrl.vsync_irq_enabled;
+			disabled_clocks = vsync_cntrl.disabled_clocks;
+>>>>>>> 5667580... msm_fb: fixup MDP 3.00 vsync events
 			/* let's disable LCDC interrupt */
 			mdp_intr_mask &= ~LCDC_FRAME_START;
 			outp32(MDP_INTR_ENABLE, mdp_intr_mask);
@@ -1277,6 +1284,25 @@ irqreturn_t mdp_isr(int irq, void *ptr)
 				dma->waiting = FALSE;
 				complete(&dma->comp);
 			}
+<<<<<<< HEAD
+=======
+
+			if (!vsync_isr && !disabled_clocks) {
+				mdp_intr_mask &= ~LCDC_FRAME_START;
+				outp32(MDP_INTR_ENABLE, mdp_intr_mask);
+				mdp_disable_irq_nosync(MDP_VSYNC_TERM);
+				vsync_cntrl.disabled_clocks = 1;
+			} else {
+				vsync_isr_handler();
+			}
+			spin_unlock_irqrestore(&mdp_spin_lock, flag);
+
+			if (!vsync_isr && !disabled_clocks)
+				mdp_pipe_ctrl(MDP_CMD_BLOCK,
+					MDP_BLOCK_POWER_OFF, TRUE);
+
+			complete_all(&vsync_cntrl.vsync_wait);
+>>>>>>> 5667580... msm_fb: fixup MDP 3.00 vsync events
 		}
 
 		/* DMA2 LCD-Out Complete */
