@@ -75,17 +75,11 @@ when         who        what, where, why                             comment tag
 #include <mach/msm_battery.h>
 #include <mach/rpc_server_handset.h>
 
-#include <linux/slab.h>
 #include <linux/mtd/nand.h>
 #include <linux/mtd/partitions.h>
 #include <linux/i2c.h>
 
 #include <linux/i2c-gpio.h> 
-
-#ifdef CONFIG_USB_G_ANDROID
-#include <linux/usb/android.h>
-#include <mach/usbdiag.h>
-#endif
 
 #include <linux/android_pmem.h>
 #include <mach/camera.h>
@@ -95,7 +89,9 @@ when         who        what, where, why                             comment tag
 #include "socinfo.h"
 #include "clock.h"
 #include "msm-keypad-devices.h"
-
+#ifdef CONFIG_USB_ANDROID
+#include <linux/usb/android_composite.h>
+#endif
 #include "pm.h"
 #ifdef CONFIG_ARCH_MSM7X27
 #include <linux/msm_kgsl.h>
@@ -169,7 +165,6 @@ static struct resource smc91x_resources[] = {
 	},
 };
 
-<<<<<<< HEAD
 #ifdef CONFIG_USB_FUNCTION
 #ifndef CONFIG_ZTE_PLATFORM
 static struct usb_mass_storage_platform_data usb_mass_storage_pdata = {
@@ -423,8 +418,6 @@ static struct platform_device android_usb_device = {
 	},
 };
 #endif
-=======
->>>>>>> fe256556... backport usb gadget from msm-3.0 kernel
 static struct platform_device smc91x_device = {
 	.name		= "smc91x",
 	.id		= 0,
@@ -432,7 +425,6 @@ static struct platform_device smc91x_device = {
 	.resource	= smc91x_resources,
 };
 
-<<<<<<< HEAD
 
 #ifndef CONFIG_ZTE_PLATFORM
 #ifdef CONFIG_USB_FUNCTION
@@ -628,19 +620,25 @@ static struct platform_device rndis_device = {
 	},
 };
 #if 0
-=======
-#ifdef CONFIG_USB_G_ANDROID
->>>>>>> fe256556... backport usb gadget from msm-3.0 kernel
 static struct android_usb_platform_data android_usb_pdata = {
-        .update_pid_and_serial_num = usb_diag_update_pid_and_serial_num,
+	.vendor_id	= 0x05C6,
+	.product_id	= 0x9026,
+	.version	= 0x0100,
+	.product_name		= "Qualcomm HSUSB Device",
+	.manufacturer_name	= "Qualcomm Incorporated",
+	.num_products = ARRAY_SIZE(usb_products),
+	.products = usb_products,
+	.num_functions = ARRAY_SIZE(usb_functions_all),
+	.functions = usb_functions_all,
+	.serial_number = "1234567890ABCDEF",
 };
-
+#endif
 static struct platform_device android_usb_device = {
-        .name       = "android_usb",
-        .id         = -1,
-        .dev        = {
-                .platform_data = &android_usb_pdata,
-        },
+	.name	= "android_usb",
+	.id		= -1,
+	.dev		= {
+		.platform_data = &android_usb_pdata,
+	},
 };
 #endif
 
@@ -3027,8 +3025,18 @@ static struct platform_device *devices[] __initdata = {
 #endif
 #endif
 
-#ifdef CONFIG_USB_G_ANDROID
-        &android_usb_device,
+#ifdef CONFIG_USB_FUNCTION
+	&msm_device_hsusb_peripheral,
+	&mass_storage_device,
+#endif
+
+#ifdef CONFIG_USB_ANDROID
+	&usb_mass_storage_device,
+	&rndis_device,
+#ifdef CONFIG_USB_ANDROID_DIAG
+	&usb_diag_device,
+#endif
+	&android_usb_device,
 #endif
 	&msm_device_i2c,
 
@@ -3862,6 +3870,14 @@ static void __init msm7x2x_init(void)
 
 
 	usb_mpp_init();
+
+#ifdef CONFIG_USB_FUNCTION
+	msm_hsusb_pdata.swfi_latency =
+		msm7x27_pm_data
+		[MSM_PM_SLEEP_MODE_RAMP_DOWN_AND_WAIT_FOR_INTERRUPT].latency;
+
+	msm_device_hsusb_peripheral.dev.platform_data = &msm_hsusb_pdata;
+#endif
 
 #ifdef CONFIG_USB_MSM_OTG_72K
 	msm_device_otg.dev.platform_data = &msm_otg_pdata;
