@@ -1446,20 +1446,6 @@ static void __init bt_power_init(void)
 
 #ifdef CONFIG_ARCH_MSM7X27
 static struct resource kgsl_3d0_resources[] = {
-<<<<<<< HEAD
-         {
-                 .name  = KGSL_3D0_REG_MEMORY,
-                 .start = 0xA0000000,
-                 .end = 0xA001ffff,
-                 .flags = IORESOURCE_MEM,
-         },
-         {
-                 .name = KGSL_3D0_IRQ,
-                 .start = INT_GRAPHICS,
-                 .end = INT_GRAPHICS,
-                 .flags = IORESOURCE_IRQ,
-         },
-=======
 	{
 		.name  = KGSL_3D0_REG_MEMORY,
 		.start = 0xA0000000,
@@ -1472,7 +1458,6 @@ static struct resource kgsl_3d0_resources[] = {
 		.end = INT_GRAPHICS,
 		.flags = IORESOURCE_IRQ,
 	},
->>>>>>> ecec309... blade2: update for new KGSL driver
 };
 
 static struct kgsl_device_platform_data kgsl_3d0_pdata = {
